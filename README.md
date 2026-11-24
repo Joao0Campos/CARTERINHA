@@ -10,6 +10,13 @@ Dê dois cliques no arquivo `index.html`. Ele abre no seu navegador, sem instala
 
 O arquivo `portal.html` mostra onde a carteirinha ficaria dentro do portal do aluno: um aviso na tela inicial e uma página própria no menu "Secretaria". É só uma simulação de proposta, não o site oficial. Abra em `https://<usuario>.github.io/<repositorio>/portal.html`.
 
+## Instalar no celular (sem barra de endereço)
+
+O portal funciona como app: depois de instalado, abre pelo ícone "Carteirinha" na tela inicial, em tela cheia.
+
+- **Android (Chrome):** abra `portal.html` e toque em **Instalar no celular** (ou, no menu ⋮, em "Instalar app").
+- **iPhone (Safari):** toque em **Compartilhar** e depois em **Adicionar à Tela de Início**.
+
 ## Publicar no GitHub Pages (pelo site do GitHub)
 
 1. Entre em https://github.com e faça login.

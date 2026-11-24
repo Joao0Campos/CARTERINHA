@@ -7,6 +7,12 @@
 <meta name="description" content="Simulação de como a carteirinha digital apareceria dentro do portal do aluno.">
 <meta name="theme-color" content="#ffffff">
 <link rel="icon" href="favicon.svg" type="image/svg+xml">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="apple-touch-icon" href="icon-180.png">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="Carteirinha">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@500;600&display=swap" rel="stylesheet">
@@ -97,6 +103,24 @@
   .field input:focus { outline: 2px solid var(--accent); outline-offset: 1px; background: #fff; }
   .setup form .btn { width: 100%; margin-top: 6px; min-height: 48px; font-size: .95rem; }
   .setup-note { margin: 14px 0 0; font-size: .78rem; color: var(--muted); text-align: center; }
+  .install-btn { width: 100%; margin-top: 10px; min-height: 46px; }
+  .install-btn[hidden], [data-install][hidden] { display: none; }
+
+  /* instruções do iPhone */
+  .sheet {
+    width: min(100% - 24px, 420px);
+    margin: auto auto 12px;
+    padding: 22px 20px 18px;
+    border: 0; border-radius: 20px;
+    background: var(--panel); color: var(--text);
+    box-shadow: 0 20px 60px rgba(10, 20, 50, .25);
+  }
+  .sheet::backdrop { background: rgba(15, 20, 40, .45); }
+  .sheet h2 { margin: 0 0 12px; font-size: 1.1rem; }
+  .sheet ol { margin: 0; padding-left: 20px; display: grid; gap: 10px; font-size: .92rem; }
+  .sheet .share-ico { display: inline-grid; vertical-align: -4px; color: var(--accent); }
+  .sheet-note { margin: 14px 0 16px; font-size: .8rem; color: var(--muted); }
+  .sheet .btn { width: 100%; }
   .setup-preview { display: grid; gap: 16px; justify-items: center; }
   .setup-preview [data-card] { width: min(100%, 480px); }
   .setup-preview p { margin: 0; font-size: .85rem; color: var(--muted); text-align: center; }
@@ -492,6 +516,9 @@
         </label>
         <button class="btn primary" type="submit">Ver no portal</button>
       </form>
+      <button class="btn install-btn" type="button" data-install hidden>
+        <svg class="i"><use href="#i-phone"/></svg>Instalar no celular
+      </button>
       <p class="setup-note">Seus dados ficam só neste aparelho.</p>
     </div>
     <div class="setup-preview">
@@ -647,7 +674,18 @@
       </div>
     </section>
 
-    <p class="fineprint">Simulação de proposta feita por alunos · não é o site oficial · <a href="#" id="linkSetup">trocar dados</a></p>
+    <p class="fineprint">Simulação de proposta feita por alunos · não é o site oficial · <a href="#" id="linkSetup">trocar dados</a><span data-install hidden> · <a href="#">instalar no celular</a></span></p>
+
+    <dialog class="sheet" id="iosSheet" aria-labelledby="iosTitle">
+      <h2 id="iosTitle">Instalar no iPhone</h2>
+      <ol>
+        <li>No Safari, toque em <strong>Compartilhar</strong> <span class="share-ico" aria-hidden="true"><svg class="i" viewBox="0 0 24 24"><path d="M12 15V3M8 7l4-4 4 4M6 11H5a1 1 0 0 0-1 1v8a1 1 0 0 0 1 1h14a1 1 0 0 0 1-1v-8a1 1 0 0 0-1-1h-1"/></svg></span> na barra de baixo.</li>
+        <li>Role e toque em <strong>Adicionar à Tela de Início</strong>.</li>
+        <li>Toque em <strong>Adicionar</strong>. O ícone “Carteirinha” aparece na sua tela.</li>
+      </ol>
+      <p class="sheet-note">Precisa ser pelo Safari. Em outro navegador do iPhone, abra este link no Safari primeiro.</p>
+      <form method="dialog"><button class="btn primary" type="submit">Entendi</button></form>
+    </dialog>
   </main>
 </div>
 
@@ -845,16 +883,17 @@
   load();
   render();
   show();
-  openSetup();
+  // Primeira vez: mostra a tela de dados. Depois (app instalado ou já preenchido), abre direto no portal.
+  if (!hasUserData) openSetup();
 
   // ---------- itens que não existem na simulação ----------
   const toastEl = document.getElementById("toast");
   let timer;
-  function toast(msg) {
+  function toast(msg, ms = 2400) {
     toastEl.textContent = msg;
     toastEl.classList.add("show");
     clearTimeout(timer);
-    timer = setTimeout(() => toastEl.classList.remove("show"), 2400);
+    timer = setTimeout(() => toastEl.classList.remove("show"), ms);
   }
   document.querySelectorAll("[data-sim]").forEach((el) =>
     el.addEventListener("click", (e) => {
@@ -864,6 +903,43 @@
         : "Nesta simulação, só Início e Carteirinha digital funcionam.");
     })
   );
+
+  // ---------- instalar como app (sem barra de endereço) ----------
+  if ("serviceWorker" in navigator && location.protocol.startsWith("http")) {
+    navigator.serviceWorker.register("sw.js").catch(() => {});
+  }
+  const standalone = window.matchMedia("(display-mode: standalone)").matches || navigator.standalone === true;
+  const isIOS = /iphone|ipad|ipod/i.test(navigator.userAgent) ||
+    (navigator.platform === "MacIntel" && navigator.maxTouchPoints > 1);
+  const touch = window.matchMedia("(pointer: coarse)").matches;
+  let deferredPrompt = null;
+  const installEls = () => document.querySelectorAll("[data-install]");
+  function showInstall(on) { installEls().forEach((el) => { el.hidden = !on; }); }
+
+  if (!standalone && (isIOS || touch)) showInstall(true);
+  window.addEventListener("beforeinstallprompt", (e) => {
+    e.preventDefault();
+    deferredPrompt = e;
+    if (!standalone) showInstall(true);
+  });
+  window.addEventListener("appinstalled", () => {
+    deferredPrompt = null;
+    showInstall(false);
+    toast("Pronto! Abra pelo ícone “Carteirinha” na tela do celular.", 4000);
+  });
+  installEls().forEach((el) => el.addEventListener("click", async (e) => {
+    e.preventDefault();
+    if (deferredPrompt) {
+      deferredPrompt.prompt();
+      await deferredPrompt.userChoice.catch(() => {});
+      deferredPrompt = null;
+    } else if (isIOS) {
+      const sheet = document.getElementById("iosSheet");
+      if (sheet.showModal) sheet.showModal(); else sheet.setAttribute("open", "");
+    } else {
+      toast("No menu do navegador (⋮), toque em “Instalar app” ou “Adicionar à tela inicial”.", 5000);
+    }
+  }));
 })();
 </script>
 </body>
