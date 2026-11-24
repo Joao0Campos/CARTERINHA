@@ -1,0 +1,846 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Carteirinha Digital — Prévia</title>
+<meta name="description" content="Prévia interativa de uma carteirinha de estudante digital. Preencha seus dados e veja como ficaria.">
+<meta name="theme-color" content="#1f4fd8">
+<link rel="icon" href="favicon.svg" type="image/svg+xml">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@500;600&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #f2f3f7;
+    --panel: #ffffff;
+    --text: #141722;
+    --muted: #5e6377;
+    --line: #e1e3eb;
+    --input: #f7f8fb;
+    --accent: #1f4fd8;
+    --on-accent: #ffffff;
+    --accent-text: var(--accent);
+    color-scheme: light dark;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --accent-text: color-mix(in srgb, var(--accent) 45%, #ffffff);
+      --bg: #0d0f15;
+      --panel: #161924;
+      --text: #eceef5;
+      --muted: #9ba1b5;
+      --line: #2a2e3d;
+      --input: #1d2130;
+    }
+  }
+
+  * { box-sizing: border-box; }
+  html { -webkit-text-size-adjust: 100%; }
+  body {
+    margin: 0;
+    font-family: Inter, system-ui, -apple-system, "Segoe UI", sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    line-height: 1.5;
+    overflow-x: hidden;
+  }
+
+  /* ---------- Cabeçalho ---------- */
+  .top {
+    max-width: 1100px;
+    margin: 0 auto;
+    padding: 40px 16px 4px;
+  }
+  .eyebrow {
+    display: inline-block;
+    font-size: .75rem;
+    font-weight: 700;
+    letter-spacing: .12em;
+    text-transform: uppercase;
+    color: var(--accent-text);
+    margin-bottom: 8px;
+  }
+  h1 {
+    font-size: clamp(1.7rem, 4.5vw, 2.6rem);
+    line-height: 1.1;
+    letter-spacing: -.025em;
+    margin: 0 0 10px;
+  }
+  .lead { color: var(--muted); margin: 0; max-width: 62ch; }
+
+  /* ---------- Layout ---------- */
+  main {
+    max-width: 1100px;
+    margin: 0 auto;
+    padding: 16px;
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) 360px;
+    gap: 32px;
+    align-items: start;
+  }
+  @media (max-width: 880px) {
+    main { grid-template-columns: minmax(0, 1fr); }
+  }
+
+  .stage {
+    position: sticky;
+    top: 16px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 18px;
+    padding: 36px 0 20px;
+  }
+  @media (max-width: 880px) { .stage { position: static; padding-top: 20px; } }
+
+  /* ---------- Carteirinha ---------- */
+  .card-wrap {
+    width: min(100%, 480px);
+    container-type: inline-size;
+    perspective: 1500px;
+  }
+  .tilt {
+    transform: rotateX(var(--rx, 0deg)) rotateY(var(--ry, 0deg));
+    transform-style: preserve-3d;
+    transition: transform .25s ease-out;
+  }
+  .card {
+    position: relative;
+    width: 100%;
+    aspect-ratio: 85.6 / 54;
+    transform-style: preserve-3d;
+    transition: transform .8s cubic-bezier(.2, .75, .2, 1);
+    cursor: pointer;
+    outline: none;
+    touch-action: manipulation;
+    -webkit-tap-highlight-color: transparent;
+  }
+  .card.flipped { transform: rotateY(180deg); }
+  .card:focus-visible .face { box-shadow: 0 0 0 3px var(--bg), 0 0 0 6px var(--accent); }
+
+  .face {
+    position: absolute;
+    inset: 0;
+    border-radius: 4.6cqw;
+    overflow: hidden;
+    backface-visibility: hidden;
+    -webkit-backface-visibility: hidden;
+    background: #fbfcff;
+    color: #151925;
+    box-shadow:
+      0 3cqw 7cqw rgba(12, 22, 60, .22),
+      0 .6cqw 1.4cqw rgba(12, 22, 60, .14);
+  }
+  .face::after { /* brilho */
+    content: "";
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(115deg, transparent 35%, rgba(255,255,255,.28) 48%, transparent 60%);
+    background-size: 250% 100%;
+    background-position: var(--shine, 100%) 0;
+    pointer-events: none;
+    mix-blend-mode: soft-light;
+  }
+  .back { transform: rotateY(180deg); }
+
+  .pattern {
+    position: absolute;
+    inset: 0;
+    background:
+      radial-gradient(circle at 100% 100%, color-mix(in srgb, var(--accent) 14%, transparent) 0 30cqw, transparent 30.2cqw),
+      repeating-linear-gradient(135deg, color-mix(in srgb, var(--accent) 5%, transparent) 0 .4cqw, transparent .4cqw 1.6cqw);
+    pointer-events: none;
+  }
+
+  .band {
+    position: absolute;
+    top: 0; left: 0; right: 0;
+    height: 17cqw;
+    padding: 0 5cqw;
+    display: flex;
+    align-items: center;
+    gap: 3cqw;
+    background: linear-gradient(120deg, var(--accent), color-mix(in srgb, var(--accent) 62%, #000));
+    color: var(--on-accent);
+  }
+  .logo {
+    flex: none;
+    width: 10cqw; height: 10cqw;
+    border-radius: 50%;
+    display: grid;
+    place-items: center;
+    background: var(--on-accent);
+    color: var(--accent);
+    font-weight: 800;
+    font-size: 3cqw;
+    letter-spacing: -.02em;
+  }
+  .inst { min-width: 0; display: flex; flex-direction: column; }
+  .inst strong {
+    font-size: 3.7cqw;
+    line-height: 1.15;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+  .inst span {
+    font-size: 2.4cqw;
+    text-transform: uppercase;
+    letter-spacing: .1em;
+    opacity: .85;
+  }
+  .seal {
+    margin-left: auto;
+    flex: none;
+    width: 9.5cqw; height: 9.5cqw;
+    border-radius: 50%;
+    background: conic-gradient(from 0deg, #ffd1f0, #c8f1ff, #d8ffd0, #fff3c4, #e6d3ff, #ffd1f0);
+    opacity: .9;
+    box-shadow: inset 0 0 0 .5cqw rgba(255,255,255,.55);
+    animation: spin 9s linear infinite;
+  }
+  @keyframes spin { to { transform: rotate(360deg); } }
+
+  .body {
+    position: absolute;
+    top: 17cqw; bottom: 10.5cqw; left: 0; right: 0;
+    padding: 3cqw 5cqw;
+    display: flex;
+    gap: 4.5cqw;
+  }
+  .photo {
+    flex: none;
+    height: 100%;
+    aspect-ratio: 3 / 4;
+    border-radius: 2.2cqw;
+    background: #dfe4f2 center / cover no-repeat;
+    box-shadow: 0 0 0 .55cqw #fff, 0 0 0 .85cqw color-mix(in srgb, var(--accent) 45%, transparent);
+  }
+  .fields {
+    min-width: 0;
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    gap: 1.6cqw;
+  }
+  .f { min-width: 0; display: flex; flex-direction: column; }
+  .f small {
+    font-size: 2.3cqw;
+    line-height: 1.3;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: .1em;
+    color: #6b7186;
+  }
+  .f b {
+    font-size: 3.2cqw;
+    font-weight: 650;
+    line-height: 1.2;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+  .f b.name {
+    font-size: 3.8cqw;
+    font-weight: 800;
+    white-space: normal;
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+  }
+  .mono { font-family: "JetBrains Mono", ui-monospace, monospace; letter-spacing: .02em; }
+  .row { display: flex; gap: 5cqw; }
+
+  .foot {
+    position: absolute;
+    left: 0; right: 0; bottom: 0;
+    height: 10.5cqw;
+    padding: 0 5cqw;
+    display: flex;
+    align-items: center;
+    gap: 2cqw;
+    border-top: .25cqw solid #e7e9f1;
+    background: rgba(255,255,255,.7);
+  }
+  .tag {
+    font-size: 2.4cqw;
+    font-weight: 700;
+    letter-spacing: .12em;
+    text-transform: uppercase;
+    padding: .9cqw 2.4cqw;
+    border-radius: 99px;
+    background: var(--accent);
+    color: var(--on-accent);
+  }
+  .tag.ghost {
+    background: transparent;
+    color: var(--accent);
+    box-shadow: inset 0 0 0 .3cqw color-mix(in srgb, var(--accent) 55%, transparent);
+  }
+  .foot .year {
+    margin-left: auto;
+    font-size: 2.4cqw;
+    color: #6b7186;
+    font-weight: 600;
+  }
+
+  .watermark {
+    position: absolute;
+    inset: 0;
+    display: grid;
+    place-items: center;
+    font-size: 14cqw;
+    font-weight: 800;
+    letter-spacing: .08em;
+    color: var(--accent);
+    opacity: .08;
+    transform: rotate(-16deg);
+    pointer-events: none;
+    user-select: none;
+  }
+
+  /* verso */
+  .stripe {
+    position: absolute;
+    top: 6cqw; left: 0; right: 0;
+    height: 10cqw;
+    background: linear-gradient(180deg, #232733, #13151d);
+  }
+  .back-content {
+    position: absolute;
+    top: 20cqw; left: 5cqw; right: 5cqw; bottom: 6cqw;
+    display: grid;
+    grid-template-columns: 1fr auto;
+    gap: 2cqw 5cqw;
+    align-content: start;
+  }
+  .sign {
+    grid-column: 1 / -1;
+    display: flex;
+    flex-direction: column;
+    gap: .8cqw;
+  }
+  .sign .line {
+    height: 6cqw;
+    border-bottom: .3cqw solid #b9bdcc;
+    font-family: "Brush Script MT", "Segoe Script", cursive;
+    font-size: 4.4cqw;
+    color: #2a3150;
+    padding-left: 2cqw;
+    display: flex;
+    align-items: flex-end;
+    white-space: nowrap;
+    overflow: hidden;
+  }
+  .sign small, .legal { font-size: 2.3cqw; color: #5b6176; }
+  .legal { margin: 0; line-height: 1.45; }
+  .barcode { display: flex; flex-direction: column; align-items: center; gap: .6cqw; }
+  .barcode svg { width: 30cqw; height: 9cqw; fill: #151925; display: block; }
+  .barcode span { font-size: 2.4cqw; }
+  .back-band {
+    position: absolute;
+    left: 0; right: 0; bottom: 0;
+    height: 3cqw;
+    background: linear-gradient(90deg, var(--accent), color-mix(in srgb, var(--accent) 55%, #fff));
+  }
+
+  .hint { font-size: .85rem; color: var(--muted); margin: 0; text-align: center; }
+
+  .actions { display: flex; flex-wrap: wrap; gap: 10px; justify-content: center; }
+  button {
+    touch-action: manipulation;
+    font: inherit;
+    font-size: .9rem;
+    font-weight: 600;
+    border: 1px solid var(--line);
+    background: var(--panel);
+    color: var(--text);
+    padding: 10px 16px;
+    border-radius: 10px;
+    cursor: pointer;
+    transition: transform .12s, border-color .12s;
+  }
+  button:hover { border-color: var(--accent); }
+  button:active { transform: scale(.97); }
+  button.primary { background: var(--accent); border-color: var(--accent); color: var(--on-accent); }
+
+  /* ---------- Formulário ---------- */
+  .panel {
+    background: var(--panel);
+    border: 1px solid var(--line);
+    border-radius: 16px;
+    padding: 22px 20px;
+  }
+  .panel h2 { font-size: 1.05rem; margin: 0 0 4px; }
+  .panel > p { margin: 0 0 18px; font-size: .88rem; color: var(--muted); }
+  fieldset { border: 0; padding: 0; margin: 0 0 18px; display: grid; gap: 12px; }
+  legend {
+    font-size: .72rem;
+    font-weight: 700;
+    letter-spacing: .1em;
+    text-transform: uppercase;
+    color: var(--muted);
+    margin-bottom: 10px;
+    padding: 0;
+  }
+  label.field { display: grid; gap: 5px; font-size: .85rem; font-weight: 600; }
+  .two { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+  input[type=text], input[type=month], select {
+    font: inherit;
+    font-size: 16px; /* 16px evita o zoom automático do iPhone ao tocar no campo */
+    font-weight: 500;
+    width: 100%;
+    padding: 10px 12px;
+    border-radius: 10px;
+    border: 1px solid var(--line);
+    background: var(--input);
+    color: var(--text);
+    min-width: 0;
+  }
+  input:focus, select:focus { outline: 2px solid var(--accent); outline-offset: 1px; }
+  .swatches { display: flex; flex-wrap: wrap; gap: 5px; align-items: center; }
+  .swatch {
+    width: 40px; height: 40px;
+    border-radius: 50%;
+    padding: 0;
+    border: 2px solid var(--panel);
+    box-shadow: 0 0 0 1px var(--line);
+  }
+  .swatch[aria-pressed=true] { box-shadow: 0 0 0 2px var(--text); }
+  input[type=color] {
+    width: 40px; height: 40px;
+    border: 1px solid var(--line);
+    border-radius: 50%;
+    padding: 0;
+    background: none;
+    cursor: pointer;
+  }
+  input[type=color]::-webkit-color-swatch-wrapper { padding: 3px; }
+  input[type=color]::-webkit-color-swatch { border: 0; border-radius: 50%; }
+  .upload {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 12px;
+    border: 1px dashed var(--line);
+    border-radius: 12px;
+    cursor: pointer;
+    font-size: .88rem;
+    color: var(--muted);
+  }
+  .upload:hover { border-color: var(--accent); }
+  .upload:focus-within { outline: 2px solid var(--accent); outline-offset: 1px; }
+  .upload input {
+    position: absolute;
+    width: 1px; height: 1px;
+    opacity: 0;
+    overflow: hidden;
+    clip: rect(0 0 0 0);
+  }
+  .upload .thumb {
+    flex: none;
+    width: 36px; height: 48px;
+    border-radius: 6px;
+    background: var(--input) center / cover no-repeat;
+  }
+  .note { font-size: .78rem; color: var(--muted); margin: 6px 0 0; }
+
+  footer {
+    max-width: 1100px;
+    margin: 0 auto;
+    padding: 24px 16px 40px;
+    font-size: .8rem;
+    color: var(--muted);
+  }
+
+  .toast {
+    position: fixed;
+    left: 50%;
+    bottom: 24px;
+    transform: translate(-50%, 20px);
+    background: var(--text);
+    color: var(--bg);
+    padding: 10px 16px;
+    border-radius: 10px;
+    font-size: .88rem;
+    font-weight: 600;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity .2s, transform .2s;
+  }
+  .toast.show { opacity: 1; transform: translate(-50%, 0); }
+
+  @media (prefers-reduced-motion: reduce) {
+    .card, .tilt { transition: none; }
+    .seal { animation: none; }
+  }
+</style>
+</head>
+<body>
+
+<header class="top">
+  <span class="eyebrow">Prévia</span>
+  <h1>Como seria a nossa carteirinha digital</h1>
+  <p class="lead">Preencha seus dados ao lado e veja a carteirinha pronta. Clique no cartão para ver o verso. Nada sai do seu navegador.</p>
+</header>
+
+<main>
+  <section class="stage" aria-label="Prévia da carteirinha">
+    <div class="card-wrap" id="wrap">
+      <div class="tilt" id="tilt">
+        <div class="card" id="card" role="button" tabindex="0" aria-label="Carteirinha — clique para virar">
+
+          <!-- Frente -->
+          <div class="face front">
+            <div class="pattern"></div>
+            <div class="band">
+              <div class="logo" id="cLogo"></div>
+              <div class="inst">
+                <strong id="cUni"></strong>
+                <span>Carteira de Estudante</span>
+              </div>
+              <div class="seal" aria-hidden="true"></div>
+            </div>
+            <div class="body">
+              <div class="photo" id="cPhoto" role="img" aria-label="Foto do estudante"></div>
+              <div class="fields">
+                <div class="f"><small>Nome</small><b class="name" id="cNome"></b></div>
+                <div class="f"><small>Curso</small><b id="cCurso"></b></div>
+                <div class="row">
+                  <div class="f"><small>Matrícula</small><b class="mono" id="cMat"></b></div>
+                  <div class="f"><small>Validade</small><b class="mono" id="cVal"></b></div>
+                </div>
+              </div>
+            </div>
+            <div class="foot">
+              <span class="tag">Estudante</span>
+              <span class="tag ghost" id="cNivel"></span>
+              <span class="year" id="cSigla"></span>
+            </div>
+            <div class="watermark" aria-hidden="true">PRÉVIA</div>
+          </div>
+
+          <!-- Verso -->
+          <div class="face back" aria-hidden="true">
+            <div class="pattern"></div>
+            <div class="stripe"></div>
+            <div class="back-content">
+              <p class="legal">
+                Documento pessoal e intransferível. Apresente junto com um documento oficial com foto quando solicitado.<br>
+                <strong>Modelo ilustrativo — prévia de design, sem validade.</strong>
+              </p>
+              <div class="barcode">
+                <div id="cBar"></div>
+                <span class="mono" id="cMat2"></span>
+              </div>
+              <div class="sign">
+                <div class="line" id="cSign"></div>
+                <small>Assinatura do(a) estudante</small>
+              </div>
+            </div>
+            <div class="watermark" aria-hidden="true">PRÉVIA</div>
+            <div class="back-band"></div>
+          </div>
+
+        </div>
+      </div>
+    </div>
+
+    <p class="hint">Clique no cartão (ou aperte Enter) para virar</p>
+    <div class="actions">
+      <button class="primary" id="btnFlip" type="button">Ver o verso</button>
+      <button id="btnLink" type="button">Copiar link</button>
+      <button id="btnReset" type="button">Voltar ao exemplo</button>
+    </div>
+  </section>
+
+  <aside class="panel">
+    <h2>Seus dados</h2>
+    <p>A prévia muda na hora, enquanto você digita.</p>
+
+    <form id="form" autocomplete="off" onsubmit="return false">
+      <fieldset>
+        <legend>Instituição</legend>
+        <label class="field">Nome da universidade
+          <input type="text" name="uni" maxlength="60">
+        </label>
+        <div class="two">
+          <label class="field">Sigla
+            <input type="text" name="sigla" maxlength="8" placeholder="automática">
+          </label>
+          <label class="field">Nível
+            <select name="nivel">
+              <option>Graduação</option>
+              <option>Pós-graduação</option>
+              <option>Mestrado</option>
+              <option>Doutorado</option>
+              <option>Técnico</option>
+            </select>
+          </label>
+        </div>
+        <div class="field" role="group" aria-labelledby="corLabel" style="display:grid;gap:8px;font-size:.85rem;font-weight:600">
+          <span id="corLabel">Cor</span>
+          <div class="swatches" id="swatches">
+            <input type="color" name="cor" aria-label="Escolher outra cor">
+          </div>
+        </div>
+      </fieldset>
+
+      <fieldset>
+        <legend>Estudante</legend>
+        <label class="field">Nome completo
+          <input type="text" name="nome" maxlength="60">
+        </label>
+        <label class="field">Curso
+          <input type="text" name="curso" maxlength="50">
+        </label>
+        <label class="field">Matrícula
+          <input type="text" name="mat" maxlength="14" inputmode="numeric">
+        </label>
+        <label class="field">Validade
+          <input type="month" name="val">
+        </label>
+        <label class="upload">
+          <span class="thumb" id="thumb"></span>
+          <span>Escolher foto<br><small>fica só no seu aparelho</small></span>
+          <input type="file" id="foto" accept="image/*">
+        </label>
+      </fieldset>
+    </form>
+    <p class="note">O link copiado leva nome, curso e cores, mas nunca a foto.</p>
+  </aside>
+</main>
+
+<footer>
+  Prévia de design feita para mostrar a ideia. Não é um documento oficial e não tem validade.
+</footer>
+
+<div class="toast" id="toast" role="status" aria-live="polite"></div>
+
+<script>
+(() => {
+  const DEFAULTS = {
+    uni: "Unicenter Nova América",
+    sigla: "",
+    nivel: "Graduação",
+    cor: "#1f4fd8",
+    nome: "Maria Eduarda Souza",
+    curso: "Administração",
+    mat: "2026104587",
+    val: "2027-12",
+  };
+  const PRESETS = [
+    ["#1f4fd8", "Azul"], ["#0f7a55", "Verde"], ["#b3261e", "Vermelho"],
+    ["#6d28d9", "Roxo"], ["#c2410c", "Laranja"],
+  ];
+  const NIVEIS = ["Graduação", "Pós-graduação", "Mestrado", "Doutorado", "Técnico"];
+  const KEYS = Object.keys(DEFAULTS);
+  const STOP = new Set(["de", "da", "do", "das", "dos", "e", "em"]);
+
+  const $ = (s) => document.querySelector(s);
+  const form = $("#form");
+  const card = $("#card");
+  const root = document.documentElement;
+  let photoUrl = null;
+
+  // ---------- estado ----------
+  function readParams() {
+    const p = new URLSearchParams(location.search);
+    const s = { ...DEFAULTS };
+    for (const k of KEYS) if (p.has(k)) s[k] = p.get(k).slice(0, 80);
+    if (!/^#[0-9a-f]{6}$/i.test(s.cor)) s.cor = DEFAULTS.cor;
+    if (!/^\d{4}-(0[1-9]|1[0-2])$/.test(s.val)) s.val = DEFAULTS.val;
+    if (!NIVEIS.includes(s.nivel)) s.nivel = DEFAULTS.nivel;
+    return s;
+  }
+  function getState() {
+    const s = {};
+    for (const k of KEYS) s[k] = form.elements[k].value.trim();
+    return s;
+  }
+  function fill(s) {
+    for (const k of KEYS) form.elements[k].value = s[k];
+  }
+
+  // ---------- helpers ----------
+  function initials(text, max) {
+    return text
+      .split(/\s+/)
+      .filter((w) => w && !STOP.has(w.toLowerCase()))
+      .map((w) => w[0])
+      .join("")
+      .toUpperCase()
+      .slice(0, max);
+  }
+  function readableOn(hex) {
+    const n = parseInt(hex.slice(1), 16);
+    const ch = [(n >> 16) & 255, (n >> 8) & 255, n & 255].map((v) => {
+      v /= 255;
+      return v <= 0.03928 ? v / 12.92 : Math.pow((v + 0.055) / 1.055, 2.4);
+    });
+    const L = 0.2126 * ch[0] + 0.7152 * ch[1] + 0.0722 * ch[2];
+    return L > 0.4 ? "#10131c" : "#ffffff";
+  }
+  function formatVal(v) {
+    const m = /^(\d{4})-(\d{2})$/.exec(v);
+    return m ? `${m[2]}/${m[1]}` : "--/----";
+  }
+  function avatar(name, color) {
+    const ini = initials(name || "?", 2) || "?";
+    const svg =
+      `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 90 120">` +
+      `<rect width="90" height="120" fill="${color}" fill-opacity=".14"/>` +
+      `<circle cx="45" cy="46" r="20" fill="${color}" fill-opacity=".28"/>` +
+      `<path d="M10 120c3-26 18-38 35-38s32 12 35 38z" fill="${color}" fill-opacity=".28"/>` +
+      `<text x="45" y="53" text-anchor="middle" font-family="Inter,Arial,sans-serif" font-weight="700" font-size="19" fill="${color}">${ini}</text>` +
+      `</svg>`;
+    return `url("data:image/svg+xml,${encodeURIComponent(svg)}")`;
+  }
+  function barcode(str) {
+    let seed = 2166136261;
+    for (const c of str || "0") seed = Math.imul(seed ^ c.charCodeAt(0), 16777619) >>> 0;
+    const rnd = () => ((seed = (Math.imul(seed, 1664525) + 1013904223) >>> 0) / 4294967296);
+    let x = 4, rects = "";
+    while (x < 196) {
+      const w = 1 + Math.floor(rnd() * 3);
+      if (rnd() > 0.42) rects += `<rect x="${x}" y="0" width="${w}" height="40"/>`;
+      x += w + (rnd() > 0.7 ? 1 : 0);
+    }
+    return `<svg viewBox="0 0 200 40" preserveAspectRatio="none" aria-hidden="true">${rects}</svg>`;
+  }
+
+  // ---------- render ----------
+  function render() {
+    const s = getState();
+    const cor = /^#[0-9a-f]{6}$/i.test(s.cor) ? s.cor : DEFAULTS.cor;
+    const sigla = (s.sigla || initials(s.uni, 4) || "UNI").toUpperCase();
+
+    root.style.setProperty("--accent", cor);
+    root.style.setProperty("--on-accent", readableOn(cor));
+    document.querySelector('meta[name="theme-color"]').content = cor;
+
+    $("#cLogo").textContent = sigla.slice(0, 4);
+    $("#cLogo").style.fontSize = sigla.length > 3 ? "2.5cqw" : "";
+    $("#cUni").textContent = s.uni || "Universidade";
+    $("#cNome").textContent = s.nome || "Seu nome";
+    $("#cCurso").textContent = s.curso || "Seu curso";
+    $("#cMat").textContent = s.mat || "0000000000";
+    $("#cMat2").textContent = s.mat || "0000000000";
+    $("#cVal").textContent = formatVal(s.val);
+    $("#cNivel").textContent = s.nivel;
+    $("#cSigla").textContent = sigla;
+    $("#cSign").textContent = (s.nome || "").split(/\s+/).filter(Boolean).slice(0, 2).join(" ");
+    $("#cBar").innerHTML = barcode(s.mat);
+
+    const bg = photoUrl ? `url("${photoUrl}")` : avatar(s.nome, cor);
+    $("#cPhoto").style.backgroundImage = bg;
+    $("#thumb").style.backgroundImage = bg;
+
+    document.querySelectorAll(".swatch").forEach((b) =>
+      b.setAttribute("aria-pressed", String(b.dataset.color.toLowerCase() === cor.toLowerCase()))
+    );
+    syncUrl(s);
+  }
+
+  function syncUrl(s) {
+    const p = new URLSearchParams();
+    for (const k of KEYS) if (s[k] && s[k] !== DEFAULTS[k]) p.set(k, s[k]);
+    const q = p.toString();
+    try { history.replaceState(null, "", q ? `?${q}` : location.pathname); } catch (e) {}
+  }
+
+  // ---------- interações ----------
+  function flip() {
+    const back = card.classList.toggle("flipped");
+    $("#btnFlip").textContent = back ? "Ver a frente" : "Ver o verso";
+    card.setAttribute("aria-label", back
+      ? "Carteirinha, mostrando o verso — clique para ver a frente"
+      : "Carteirinha, mostrando a frente — clique para ver o verso");
+    $(".face.front").setAttribute("aria-hidden", String(back));
+    $(".face.back").setAttribute("aria-hidden", String(!back));
+  }
+  card.addEventListener("click", flip);
+  card.addEventListener("keydown", (e) => {
+    if (e.key === "Enter" || e.key === " ") { e.preventDefault(); flip(); }
+  });
+  $("#btnFlip").addEventListener("click", flip);
+
+  $("#btnReset").addEventListener("click", () => {
+    if (photoUrl) URL.revokeObjectURL(photoUrl);
+    photoUrl = null;
+    $("#foto").value = "";
+    fill(DEFAULTS);
+    render();
+  });
+
+  $("#btnLink").addEventListener("click", async () => {
+    const url = location.href;
+    try {
+      await navigator.clipboard.writeText(url);
+      toast("Link copiado. A foto não vai junto.");
+    } catch (e) {
+      prompt("Copie o link:", url);
+    }
+  });
+
+  let toastTimer;
+  function toast(msg) {
+    const t = $("#toast");
+    t.textContent = msg;
+    t.classList.add("show");
+    clearTimeout(toastTimer);
+    toastTimer = setTimeout(() => t.classList.remove("show"), 2200);
+  }
+
+  form.addEventListener("input", render);
+  form.addEventListener("change", render);
+
+  $("#foto").addEventListener("change", (e) => {
+    const file = e.target.files && e.target.files[0];
+    if (!file || !file.type.startsWith("image/")) return;
+    if (photoUrl) URL.revokeObjectURL(photoUrl);
+    photoUrl = URL.createObjectURL(file);
+    render();
+  });
+
+  // amostras de cor
+  const sw = $("#swatches");
+  PRESETS.forEach(([c, nome]) => {
+    const b = document.createElement("button");
+    b.type = "button";
+    b.className = "swatch";
+    b.dataset.color = c;
+    b.style.background = c;
+    b.setAttribute("aria-label", nome);
+    b.title = nome;
+    b.addEventListener("click", () => { form.elements.cor.value = c; render(); });
+    sw.insertBefore(b, sw.lastElementChild);
+  });
+
+  // inclinação 3D com o mouse
+  const reduce = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+  const wrap = $("#wrap");
+  const tilt = $("#tilt");
+  if (!reduce && window.matchMedia("(hover: hover)").matches) {
+    wrap.addEventListener("pointermove", (e) => {
+      const r = wrap.getBoundingClientRect();
+      const x = (e.clientX - r.left) / r.width - 0.5;
+      const y = (e.clientY - r.top) / r.height - 0.5;
+      tilt.style.setProperty("--ry", `${x * 14}deg`);
+      tilt.style.setProperty("--rx", `${-y * 14}deg`);
+      card.style.setProperty("--shine", `${(x + 0.5) * 100}%`);
+    });
+    wrap.addEventListener("pointerleave", () => {
+      tilt.style.setProperty("--ry", "0deg");
+      tilt.style.setProperty("--rx", "0deg");
+    });
+  }
+
+  fill(readParams());
+  render();
+})();
+</script>
+</body>
+</html>
