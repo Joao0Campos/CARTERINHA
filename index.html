@@ -286,20 +286,6 @@
     font-weight: 600;
   }
 
-  .watermark {
-    position: absolute;
-    inset: 0;
-    display: grid;
-    place-items: center;
-    font-size: 14cqw;
-    font-weight: 800;
-    letter-spacing: .08em;
-    color: var(--accent);
-    opacity: .08;
-    transform: rotate(-16deg);
-    pointer-events: none;
-    user-select: none;
-  }
 
   /* verso */
   .stripe {
@@ -517,9 +503,8 @@
             <div class="foot">
               <span class="tag">Estudante</span>
               <span class="tag ghost" id="cNivel"></span>
-              <span class="year" id="cSigla"></span>
+              <span class="year"><span id="cSigla"></span> · Modelo</span>
             </div>
-            <div class="watermark" aria-hidden="true">PRÉVIA</div>
           </div>
 
           <!-- Verso -->
@@ -529,7 +514,7 @@
             <div class="back-content">
               <p class="legal">
                 Documento pessoal e intransferível. Apresente junto com um documento oficial com foto quando solicitado.<br>
-                <strong>Modelo ilustrativo — prévia de design, sem validade.</strong>
+                Modelo de demonstração.
               </p>
               <div class="barcode">
                 <div id="cBar"></div>
@@ -540,7 +525,6 @@
                 <small>Assinatura do(a) estudante</small>
               </div>
             </div>
-            <div class="watermark" aria-hidden="true">PRÉVIA</div>
             <div class="back-band"></div>
           </div>
 
