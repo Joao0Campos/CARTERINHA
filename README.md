@@ -6,6 +6,10 @@ Esta página mostra uma **prévia** de uma carteirinha de estudante. Ela serve s
 
 Dê dois cliques no arquivo `index.html`. Ele abre no seu navegador, sem instalar nada.
 
+## Simulação no portal do aluno
+
+O arquivo `portal.html` mostra onde a carteirinha ficaria dentro do portal do aluno: um aviso na tela inicial e uma página própria no menu "Secretaria". É só uma simulação de proposta, não o site oficial. Abra em `https://<usuario>.github.io/<repositorio>/portal.html`.
+
 ## Publicar no GitHub Pages (pelo site do GitHub)
 
 1. Entre em https://github.com e faça login.
